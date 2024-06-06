@@ -108,7 +108,9 @@ class ShowReferralData extends WP_List_Table
             'sender_id'    => array('sender_id', false),
             'recipient_id' => array('recipient_id', false),
             'sent_date'    => array('sent_date', false),
-            'received_date'    => array('received_date', false),
+            'received_date'=> array('received_date', false),
+            'chapter'      => array('chapter', false),
+            'referral_type'=> array('referral_type', false),
         );
     }
 
@@ -242,10 +244,10 @@ class ShowReferralData extends WP_List_Table
             case 'chapter':
                 // Get the user ID associated with the row
                 // $user_id = ($item['recipient_id']) ? $item['recipient_id'] : $item['sender_id'];
-                $user_id = ($item['sender_id']) ? $item['sender_id'] : '';
+                $user_id = ($item['sender_id']) ? $item['sender_id'] : '';  // USer ID of referral sender.
 
                 // Fetch the "Chapter Member" data from BuddyBoss member profile page
-                $chapter_data = $this->get_buddyboss_profile_data($user_id);
+                $chapter_data = $this->get_buddyboss_profile_data($user_id);  //Chapter name of referral sender. 
 
                 return $chapter_data;
 				
@@ -267,6 +269,8 @@ class ShowReferralData extends WP_List_Table
     {
         if (function_exists('xprofile_get_field_data')) {
             // Adjust the field_id based on your BuddyBoss setup
+            //    11 - Chapter
+            //    40 - Chapter Role (self-assigned) Custom order
             $field_id = '11'; // Replace with the actual field ID for the chapter
 
             // Get the field data for the specified user and field ID
