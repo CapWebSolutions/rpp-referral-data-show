@@ -77,7 +77,6 @@ class ShowReferralData extends WP_List_Table
             'recipient_id' => 'Recipient ID',
             'sent_date'    => 'Sent Date',
             'received_date'    => 'Received Date',
-            'chapter'       => 'Chapter',
 			'referral_type' => 'Types of Referral',
         );
 
@@ -109,7 +108,6 @@ class ShowReferralData extends WP_List_Table
             'recipient_id' => array('recipient_id', false),
             'sent_date'    => array('sent_date', false),
             'received_date'=> array('received_date', false),
-            'chapter'      => array('chapter', false),
             'referral_type'=> array('referral_type', false),
         );
     }
@@ -241,17 +239,27 @@ class ShowReferralData extends WP_List_Table
             case 'received_date':
                 return date('F j, Y g:i a', strtotime($item[$column_name]));
 
-            case 'chapter':
+            case 'sender_chapter':
                 // Get the user ID associated with the row
                 // $user_id = ($item['recipient_id']) ? $item['recipient_id'] : $item['sender_id'];
                 $user_id = ($item['sender_id']) ? $item['sender_id'] : '';  // USer ID of referral sender.
 
                 // Fetch the "Chapter Member" data from BuddyBoss member profile page
-                $chapter_data = $this->get_buddyboss_profile_data($user_id);  //Chapter name of referral sender. 
+                $sender_chapter_data = $this->get_buddyboss_profile_data($user_id);  //Chapter name of referral sender. 
 
-                return $chapter_data;
+                return $sender_chapter_data;
 				
-			case 'referral_type':
+            case 'recipient_chapter':
+                // Get the user ID associated with the row
+                // $user_id = ($item['recipient_id']) ? $item['recipient_id'] : $item['sender_id'];
+                $user_id = ($item['recipient_id']) ? $item['recipient_id'] : '';  // User ID of referral recipient.
+
+                // Fetch the "Chapter Member" data from BuddyBoss member profile page
+                $recipient_chapter_data = $this->get_buddyboss_profile_data($user_id);  //Chapter name of referral recipient. 
+
+                return $recipient_chapter_data;
+   
+            case 'referral_type':
                 return $item['type_of_referral'];
 
             default:
