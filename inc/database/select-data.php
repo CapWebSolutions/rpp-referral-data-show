@@ -238,26 +238,6 @@ class ShowReferralData extends WP_List_Table
             case 'sent_date':
             case 'received_date':
                 return date('F j, Y g:i a', strtotime($item[$column_name]));
-
-            case 'sender_chapter':
-                // Get the user ID associated with the row
-                // $user_id = ($item['recipient_id']) ? $item['recipient_id'] : $item['sender_id'];
-                $user_id = ($item['sender_id']) ? $item['sender_id'] : '';  // USer ID of referral sender.
-
-                // Fetch the "Chapter Member" data from BuddyBoss member profile page
-                $sender_chapter_data = $this->get_buddyboss_profile_data($user_id);  //Chapter name of referral sender. 
-
-                return $sender_chapter_data;
-				
-            case 'recipient_chapter':
-                // Get the user ID associated with the row
-                // $user_id = ($item['recipient_id']) ? $item['recipient_id'] : $item['sender_id'];
-                $user_id = ($item['recipient_id']) ? $item['recipient_id'] : '';  // User ID of referral recipient.
-
-                // Fetch the "Chapter Member" data from BuddyBoss member profile page
-                $recipient_chapter_data = $this->get_buddyboss_profile_data($user_id);  //Chapter name of referral recipient. 
-
-                return $recipient_chapter_data;
    
             case 'referral_type':
                 return $item['type_of_referral'];

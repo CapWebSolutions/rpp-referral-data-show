@@ -3,7 +3,7 @@
 /**
  * Plugin Name:       Referral Data Show
  * Description:       A plugin for managing referral data.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Author:            Referral Partners Plus
  * Author URI:         #
  * 
