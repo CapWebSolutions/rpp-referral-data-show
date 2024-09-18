@@ -381,4 +381,16 @@ class ShowReferralData extends WP_List_Table
 
         return ob_get_clean();
     }
+
+    /**
+     * Resend Referral Notices
+     *
+     * @return boolean
+     */
+    public function resend_referral_notice()
+    {
+        $notice_sent = true;
+
+        return $notice_sent;
+    }
 }

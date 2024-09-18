@@ -3,10 +3,10 @@
 /**
  * Plugin Name:       Referral Data Show
  * Description:       A plugin for managing referral data.
- * Version:           1.1.0
+ * Version:           1.1.1
  * Author:            Referral Partners Plus
  * Author URI:         #
- * 
+ * GitHub Plugin URI: https://github.com/CapWebSolutions/rpp-referral-data-show
  */
 
 defined('ABSPATH') || die("Invalid Request");
@@ -21,6 +21,8 @@ define('Referral_PLUGIN_FILE', __FILE__);
 
 // Include the file where Example_List_Table is defined
 require_once Referral_PLUGIN_PATH . 'inc/database/select-data.php';
+
+require_once Referral_PLUGIN_PATH . 'inc/classes/class-custom-notifications.php';
 
 if (!class_exists('ReferralPluginMain')) {
     class ReferralPluginMain
