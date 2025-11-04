@@ -1,27 +1,27 @@
 <?php
 
-if (!class_exists('DeleteReferralTable')) {
-    class DeleteReferralTable
-    {
-        public static function delete_referral_table()
-        {
-            global $wpdb;
+if ( ! class_exists( 'DeleteReferralTable' ) ) {
+	class DeleteReferralTable {
 
-            // Your table name
-            $table_name = $wpdb->prefix . 'show_referrals';
+		public static function delete_referral_table() {
+			global $wpdb;
 
-            // Delete all data from the table
-//             $wpdb->query("TRUNCATE TABLE $table_name");
+			// Your table name
+			$table_name = $wpdb->prefix . 'show_referrals';
 
-            // Delete the table itself
-//             $wpdb->query("DROP TABLE IF EXISTS $table_name");
-        }
-    }
+			// Delete all data from the table
+			//             $wpdb->query( "TRUNCATE TABLE $table_name" );
+
+			// Delete the table itself
+			//             $wpdb->query( "DROP TABLE IF EXISTS $table_name" );
+		}
+
+		public static function deactivate_referral_plugin() {
+			self::delete_referral_table();
+		}
+	}
+
 }
 
 // Register deactivation hook
-// register_deactivation_hook(__FILE__, 'deactivate_referral_plugin');
-function deactivate_referral_plugin()
-{
-    DeleteReferralTable::delete_referral_table();
-}
+register_deactivation_hook( __FILE__, 'deactivate_referral_plugin' );
