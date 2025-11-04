@@ -77,7 +77,8 @@ class ShowReferralData extends WP_List_Table
             'recipient_id' => 'Recipient ID',
             'sent_date'    => 'Sent Date',
             'received_date'    => 'Received Date',
-			'referral_type' => 'Types of Referral',
+			'referral_type' => 'Referral Type',
+			'referral_subtype' => 'Referral Subtype',
         );
 
         return $columns;
@@ -240,8 +241,11 @@ class ShowReferralData extends WP_List_Table
                 return date('F j, Y g:i a', strtotime($item[$column_name]));
    
             case 'referral_type':
-                return $item['type_of_referral'];
+                return $item['referral_type'];
 
+            case 'referral_subtype':
+                return $item['referral_subtype'];
+                
             default:
                 return print_r($item, true);
         }

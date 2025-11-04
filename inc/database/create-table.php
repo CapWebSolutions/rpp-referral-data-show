@@ -23,7 +23,8 @@ if (!class_exists('CreateReferralTable')) {
                     ref_email varchar(255) NOT NULL,
                     ref_phoneno varchar(20) NOT NULL,
                     ref_message text NOT NULL,
-					type_of_referral varchar(100) NOT NULL DEFAULT '',
+					referral_type varchar(100) NOT NULL DEFAULT '',
+					referral_subtype varchar(100) NOT NULL DEFAULT '',
                     sender_id mediumint(9) NOT NULL,
                     recipient_id mediumint(9) NOT NULL,
                     sent_date datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
@@ -35,8 +36,18 @@ if (!class_exists('CreateReferralTable')) {
                 require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
                 dbDelta($sql);
             } else {
-                // Check if the 'type_of_referral' column already exists
-                $column_name = 'type_of_referral';
+                // Check if the 'referral_type' column already exists
+                $column_name = 'referral_type';
+                $column_exists = $wpdb->get_var("SHOW COLUMNS FROM $table_name LIKE '$column_name'");
+
+                // If the column doesn't exist, add it
+                if (!$column_exists) {
+                    $sql = "ALTER TABLE $table_name ADD COLUMN $column_name varchar(100) NOT NULL DEFAULT ''";
+                    $wpdb->query($sql);
+                }
+
+                // Check if the 'referral_subtype' column already exists
+                $column_name = 'referral_subtype';
                 $column_exists = $wpdb->get_var("SHOW COLUMNS FROM $table_name LIKE '$column_name'");
 
                 // If the column doesn't exist, add it
