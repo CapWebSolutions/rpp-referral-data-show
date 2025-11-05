@@ -242,17 +242,6 @@ class ShowReferralData extends WP_List_Table {
         }
     }
 
-			case 'referral_type':
-				return $item['referral_type'];
-
-			case 'referral_subtype':
-				return $item['referral_subtype'];
-
-			default:
-				return print_r( $item, true );
-		}
-	}
-
 	/**
 	 * Fetch the "Chapter Member" data from BuddyBoss member profile page
 	 *
