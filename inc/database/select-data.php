@@ -58,26 +58,9 @@ class ShowReferralData extends WP_List_Table {
 
 		$data = array_slice( $data, ( ( $current_page - 1 ) * $per_page ), $per_page );
 
-    /**
-     * Override the parent columns method. Defines the columns to use in your listing table
-     *
-     * @return Array
-     */
-    public function get_columns()
-    {
-        $columns = array(
-            'cb'            => '<input type="checkbox" />',
-            'ref_name'     => 'Referral Name',
-            'ref_email'    => 'Referral Email',
-            'ref_phoneno'  => 'Referral Phone Number',
-            'ref_message'  => 'Referral Message',
-            'sender_id'    => 'Sender ID',
-            'recipient_id' => 'Recipient ID',
-            'sent_date'    => 'Sent Date',
-            'received_date'    => 'Received Date',
-			'referral_type' => 'Referral Type',
-			'referral_subtype' => 'Referral Subtype',
-        );
+		$this->_column_headers = array( $columns, $hidden, $sortable );
+		$this->items           = $data;
+	}
 
 	/**
 	 * Override the parent columns method. Defines the columns to use in your listing table
@@ -247,13 +230,13 @@ class ShowReferralData extends WP_List_Table {
             case 'sent_date':
             case 'received_date':
                 return date('F j, Y g:i a', strtotime($item[$column_name]));
-   
+
             case 'referral_type':
                 return $item['referral_type'];
 
             case 'referral_subtype':
                 return $item['referral_subtype'];
-                
+
             default:
                 return print_r($item, true);
         }
