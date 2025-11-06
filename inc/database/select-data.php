@@ -227,6 +227,11 @@ class ShowReferralData extends WP_List_Table {
 				$sender_name = $wpdb->get_var( $wpdb->prepare( "SELECT display_name FROM {$wpdb->prefix}users WHERE ID = %d", $item['sender_id'] ) );
 				return $sender_name;
 
+            case 'recipient_id':
+                // Fetch recipient name based on recipient_id
+                $recipient_name = $wpdb->get_var($wpdb->prepare("SELECT display_name FROM {$wpdb->prefix}users WHERE ID = %d", $item['recipient_id']));
+                return $recipient_name;
+
             case 'sent_date':
             case 'received_date':
                 return date('F j, Y g:i a', strtotime($item[$column_name]));
