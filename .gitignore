@@ -1,0 +1,4 @@
+
+*.bak
+
+inc/database/phpinfo.php
