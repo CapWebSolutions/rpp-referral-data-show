@@ -3,7 +3,7 @@
 /**
  * Plugin Name:       Referral Data Show
  * Description:       A plugin for managing referral data.
- * Version:           1.1.4
+ * Version:           1.1.6
  * Author:            Referral Partners Plus
  * Author URI:         #
  * GitHub Plugin URI: https://github.com/CapWebSolutions/rpp-referral-data-show
