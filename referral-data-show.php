@@ -3,7 +3,7 @@
 /**
  * Plugin Name:       Referral Data Show
  * Description:       A plugin for managing referral data.
- * Version:           1.1.7
+ * Version:           1.1.8
  * Author:            Referral Partners Plus
  * Author URI:         #
  * GitHub Plugin URI: https://github.com/CapWebSolutions/rpp-referral-data-show
@@ -110,14 +110,66 @@ if ( ! class_exists( 'ReferralPluginMain' ) ) {
 		public function list_table_page() {
 			$example_list_table = new ShowReferralData();
 			$example_list_table->prepare_items();
+			$is_self_referrals_view = isset( $_GET['self_referrals'] ) && '1' === sanitize_text_field( wp_unslash( $_GET['self_referrals'] ) );
+			$self_referrals_count   = $example_list_table->get_self_referrals_count();
+			$self_referrals_url     = add_query_arg(
+				array(
+					'page'           => 'referral_data_page',
+					'self_referrals' => '1',
+				),
+				admin_url( 'admin.php' )
+			);
+			$all_referrals_url      = add_query_arg(
+				array(
+					'page' => 'referral_data_page',
+				),
+				admin_url( 'admin.php' )
+			);
 
+			/* translators: %d: self-referrals count */
+			$count_label = sprintf( esc_html__( 'Self-referrals: %d', 'rpp-referral-data-show' ), absint( $self_referrals_count ) );
 			echo '<div class="wrap">
-	  <h2>All Referrals</h2>
-	<form method="post" action="">
-	<input type="hidden" name="action" value="download_csv">
-	<button type="submit" class="button">Download CSV</button>
-	</form>';
+	  <h2 style="display:flex; align-items:center; gap:10px;">' . esc_html( $is_self_referrals_view ? 'Self-referrals' : 'All Referrals' ) . '
+		<span class="awaiting-mod" style="position:static; margin:0; min-width:auto;">' . esc_html( $count_label ) . '</span>
+	  </h2>';
+
+			if ( isset( $_GET['notice'] ) && isset( $_GET['count'] ) ) {
+				$notice_type = sanitize_text_field( wp_unslash( $_GET['notice'] ) );
+				$count       = absint( $_GET['count'] );
+				$message     = '';
+				$class       = 'notice-info';
+
+				if ( 'send_notice_success' === $notice_type ) {
+					/* translators: %d: number of referrals processed */
+					$message = sprintf( esc_html__( 'Notice email sent for %d referral(s).', 'rpp-referral-data-show' ), $count );
+					$class   = 'notice-success';
+				} elseif ( 'send_notice_error' === $notice_type ) {
+					$message = esc_html__( 'Unable to send notice email for the selected referral(s).', 'rpp-referral-data-show' );
+					$class   = 'notice-error';
+				}
+
+				if ( ! empty( $message ) ) {
+					echo '<div class="notice ' . esc_attr( $class ) . ' is-dismissible"><p>' . esc_html( $message ) . '</p></div>';
+				}
+			}
+
+			echo '<div style="margin: 0 0 12px 0;">';
+			echo '<form method="post" action="" style="display:inline-block; margin-right:8px;">';
+			echo '<input type="hidden" name="action" value="download_csv">';
+			wp_nonce_field( 'rpp_download_csv', 'rpp_download_csv_nonce' );
+			echo '<button type="submit" class="button">' . esc_html__( 'Download CSV', 'rpp-referral-data-show' ) . '</button>';
+			echo '</form>';
+			echo '<a class="button" href="' . esc_url( $self_referrals_url ) . '">' . esc_html__( 'Show Self-referrals', 'rpp-referral-data-show' ) . '</a>';
+			if ( $is_self_referrals_view ) {
+				echo ' <a class="button" href="' . esc_url( $all_referrals_url ) . '">' . esc_html__( 'Show All Referrals', 'rpp-referral-data-show' ) . '</a>';
+			}
+			echo '</div>';
+
+			echo '<form method="post">';
+			echo '<input type="hidden" name="page" value="referral_data_page">';
+			wp_nonce_field( 'bulk-referrals' );
 			$example_list_table->display();
+			echo '</form>';
 			echo '</div>';
 		}
 
@@ -150,6 +202,15 @@ if ( ! class_exists( 'ReferralPluginMain' ) ) {
 		 */
 		public function handle_csv_download() {
 			if ( isset( $_POST['action'] ) && $_POST['action'] === 'download_csv' ) {
+				if ( ! current_user_can( 'manage_options' ) ) {
+					wp_die( esc_html__( 'You do not have permission to download this CSV.', 'rpp-referral-data-show' ) );
+				}
+
+				$nonce = isset( $_POST['rpp_download_csv_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['rpp_download_csv_nonce'] ) ) : '';
+				if ( ! wp_verify_nonce( $nonce, 'rpp_download_csv' ) ) {
+					wp_die( esc_html__( 'Invalid request for CSV download.', 'rpp-referral-data-show' ) );
+				}
+
 				$example_list_table = new ShowReferralData();
 				$example_list_table->prepare_items(); // Make sure data is prepared
 

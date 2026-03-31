@@ -30,6 +30,8 @@ class ShowReferralData extends WP_List_Table {
 
 		$table_name = $wpdb->prefix . 'show_referrals';
 
+		$this->process_bulk_action();
+
 		$columns  = $this->get_columns();
 		$hidden   = $this->get_hidden_columns();
 		$sortable = $this->get_sortable_columns();
@@ -41,7 +43,11 @@ class ShowReferralData extends WP_List_Table {
 		$this->process_search();
 
 		// Fetch data from the table
-		$data = $wpdb->get_results( "SELECT * FROM $table_name", ARRAY_A );
+		if ( $this->is_self_referrals_view() ) {
+			$data = $wpdb->get_results( "SELECT * FROM $table_name WHERE sender_id = recipient_id", ARRAY_A );
+		} else {
+			$data = $wpdb->get_results( "SELECT * FROM $table_name", ARRAY_A );
+		}
 
 		usort( $data, array( &$this, 'sort_data' ) );
 
@@ -83,6 +89,29 @@ class ShowReferralData extends WP_List_Table {
 		);
 
 		return $columns;
+	}
+
+	/**
+	 * Returns true if self-referrals mode is enabled.
+	 *
+	 * @return bool
+	 */
+	private function is_self_referrals_view() {
+		return isset( $_GET['self_referrals'] ) && '1' === sanitize_text_field( wp_unslash( $_GET['self_referrals'] ) );
+	}
+
+	/**
+	 * Get total count of self-referral records.
+	 *
+	 * @return int
+	 */
+	public function get_self_referrals_count() {
+		global $wpdb;
+
+		$table_name = $wpdb->prefix . 'show_referrals';
+		$count      = $wpdb->get_var( "SELECT COUNT(*) FROM $table_name WHERE sender_id = recipient_id" );
+
+		return absint( $count );
 	}
 
 	/**
@@ -269,6 +298,34 @@ class ShowReferralData extends WP_List_Table {
 		return '';
 	}
 
+	/**
+	 * Render the ref_name column with row actions.
+	 *
+	 * @param array $item Referral row.
+	 * @return string
+	 */
+	public function column_ref_name( $item ) {
+		$ref_id = isset( $item['ref_id'] ) ? absint( $item['ref_id'] ) : 0;
+
+		$url = wp_nonce_url(
+			add_query_arg(
+				array(
+					'page'     => 'referral_data_page',
+					'action'   => 'send_notice_email',
+					'referral' => $ref_id,
+				),
+				admin_url( 'admin.php' )
+			),
+			'rpp_send_notice_email_' . $ref_id
+		);
+
+		$actions = array(
+			'send_notice_email' => '<a href="' . esc_url( $url ) . '">' . esc_html__( 'Send notice email', 'rpp-referral-data-show' ) . '</a>',
+		);
+
+		return sprintf( '%1$s %2$s', esc_html( $item['ref_name'] ), $this->row_actions( $actions ) );
+	}
+
 
 	/**
 	 * column_cb function
@@ -290,7 +347,8 @@ class ShowReferralData extends WP_List_Table {
 	 */
 	protected function get_bulk_actions() {
 		return array(
-			'delete' => 'Delete',
+			'delete'            => __( 'Delete', 'rpp-referral-data-show' ),
+			'send_notice_email' => __( 'Send notice email', 'rpp-referral-data-show' ),
 		);
 	}
 
@@ -300,8 +358,65 @@ class ShowReferralData extends WP_List_Table {
 	 * @return void
 	 */
 	protected function process_bulk_action() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		$current_action = $this->current_action();
+		$page           = isset( $_REQUEST['page'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) : '';
+		if ( 'referral_data_page' !== $page || empty( $current_action ) ) {
+			return;
+		}
+
+		if ( 'send_notice_email' === $current_action ) {
+			$referral_ids = isset( $_REQUEST['referral'] ) ? (array) wp_unslash( $_REQUEST['referral'] ) : array();
+			$referral_ids = array_map( 'absint', $referral_ids );
+			$referral_ids = array_filter( $referral_ids );
+
+			if ( empty( $referral_ids ) ) {
+				return;
+			}
+
+			if ( 1 === count( $referral_ids ) && isset( $_REQUEST['_wpnonce'] ) ) {
+				$single_nonce = sanitize_text_field( wp_unslash( $_REQUEST['_wpnonce'] ) );
+				if ( ! wp_verify_nonce( $single_nonce, 'rpp_send_notice_email_' . $referral_ids[0] ) ) {
+					return;
+				}
+			} else {
+				check_admin_referer( 'bulk-referrals' );
+			}
+
+			$sent_count = 0;
+			foreach ( $referral_ids as $referral_id ) {
+				if ( $this->send_notice_email_for_referral( $referral_id ) ) {
+					++$sent_count;
+				}
+			}
+
+			$base_url = add_query_arg(
+				array(
+					'page' => 'referral_data_page',
+				),
+				admin_url( 'admin.php' )
+			);
+			if ( $this->is_self_referrals_view() ) {
+				$base_url = add_query_arg( 'self_referrals', '1', $base_url );
+			}
+
+			$redirect_url = add_query_arg(
+				array(
+					'notice' => $sent_count > 0 ? 'send_notice_success' : 'send_notice_error',
+					'count'  => $sent_count,
+				),
+				$base_url
+			);
+			wp_safe_redirect( $redirect_url );
+			exit;
+		}
+
 		if ( 'delete' === $this->current_action() ) {
-			$referral_ids = isset( $_REQUEST['referral'] ) ? $_REQUEST['referral'] : array();
+			check_admin_referer( 'bulk-referrals' );
+			$referral_ids = isset( $_REQUEST['referral'] ) ? array_map( 'absint', (array) wp_unslash( $_REQUEST['referral'] ) ) : array();
 
 			if ( ! empty( $referral_ids ) ) {
 				global $wpdb;
@@ -312,6 +427,83 @@ class ShowReferralData extends WP_List_Table {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Send notice email for a referral record.
+	 *
+	 * @param int $referral_id Referral ID.
+	 * @return bool
+	 */
+	private function send_notice_email_for_referral( $referral_id ) {
+		global $wpdb;
+
+		$table_name = $wpdb->prefix . 'show_referrals';
+		$referral   = $wpdb->get_row(
+			$wpdb->prepare( "SELECT * FROM $table_name WHERE ref_id = %d", $referral_id ),
+			ARRAY_A
+		);
+
+		if ( empty( $referral ) ) {
+			return false;
+		}
+
+		$recipient_id    = isset( $referral['recipient_id'] ) ? absint( $referral['recipient_id'] ) : 0;
+		$recipient_email = $recipient_id > 0 ? get_the_author_meta( 'user_email', $recipient_id ) : '';
+		if ( empty( $recipient_email ) && ! empty( $referral['ref_email'] ) && is_email( $referral['ref_email'] ) ) {
+			$recipient_email = $referral['ref_email'];
+		}
+
+		if ( empty( $recipient_email ) || ! is_email( $recipient_email ) ) {
+			return false;
+		}
+
+		$subject = sprintf(
+			/* translators: %d: referral ID */
+			__( 'Self-referral notice for %1$s referral.', 'rpp-referral-data-show' ),
+			$referral['ref_name']
+		);
+		$message = sprintf(
+			/* translators: 1: referral name, 2: referral email, 3: referral date, 4: referral message */
+			__(
+				nl2br("A self-referral was identified.\n\nReferral Name: %1\$s\nReferral Email: %2\$s\nSent Date: %3\$s\nReferral Message: %4\$s\n\n%5\$s\n"),
+				'rpp-referral-data-show'
+			),
+			isset( $referral['ref_name'] ) ? sanitize_text_field( $referral['ref_name'] ) : '',
+			isset( $referral['ref_email'] ) ? sanitize_email( $referral['ref_email'] ) : '',
+			isset( $referral['sent_date'] ) ? sanitize_text_field( $referral['sent_date'] ) : '',
+			isset( $referral['ref_message'] ) ? sanitize_textarea_field( $referral['ref_message'] ) : '',
+			'View this referral from your <a href="https://referralpartnersplus.com/members/me/my-referral-history">My Sent Referrals</a> page and update it as needed.'
+		);
+
+		/**
+		 * Filter subject of self-referral notice email.
+		 *
+		 * @param string $subject   Email subject.
+		 * @param array  $referral  Referral row data.
+		 * @param int    $referral_id Referral ID.
+		 */
+		$subject = apply_filters( 'rpp_self_referral_notice_email_subject', $subject, $referral, $referral_id );
+
+		/**
+		 * Filter body of self-referral notice email.
+		 *
+		 * @param string $message   Email body.
+		 * @param array  $referral  Referral row data.
+		 * @param int    $referral_id Referral ID.
+		 */
+		$message = apply_filters( 'rpp_self_referral_notice_email_message', $message, $referral, $referral_id );
+
+		/**
+		 * Filter headers for self-referral notice email.
+		 *
+		 * @param array|string $headers Email headers.
+		 * @param array        $referral Referral row data.
+		 * @param int          $referral_id Referral ID.
+		 */
+		$headers = apply_filters( 'rpp_self_referral_notice_email_headers', array(), $referral, $referral_id );
+
+		return (bool) wp_mail( $recipient_email, $subject, $message, $headers );
 	}
 
 	/**
