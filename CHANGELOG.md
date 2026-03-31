@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog]( https://keepachangelog.com/en/1.1.0/ ),
 and this project adheres to [Semantic Versioning]( https://semver.org/spec/v2.0.0.html ).
 
+## [1.1.8] - 2026-03-31 - Cap Web Solutions
+
+### Added
+
+- UI update to add a Show Self referrals on the Referral page, includes:
+	- Added Show Self-referrals button next to Download CSV.
+	- Added Show All Referrals button when in filtered view.
+	- Added admin notice rendering for send-email success/error counts.
+	- Wrapped list table in a proper <form method="post"> so bulk actions work.
+	- Added bulk-referrals nonce field for bulk actions.
+	- Added send_notice_email_for_referral() 
+	- Functions to filter notice content
+		- rpp_self_referral_notice_email_subject
+		- rpp_self_referral_notice_email_message
+		- rpp_self_referral_notice_email_headers
+	- Self referrals count badge on page
+	- Default email notice references user Referral page for ease of access. 
+
 ## [1.1.7] - 2026-01-12 - Cap Web Solutions
 
 ### Changed
