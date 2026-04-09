@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog]( https://keepachangelog.com/en/1.1.0/ ),
 and this project adheres to [Semantic Versioning]( https://semver.org/spec/v2.0.0.html ).
 
+## [1.1.9] - 2026-04-09 - Cap Web Solutions
+
+### Added
+
+- Refined the email message that an admin triggers to notify users of self-referral. 
+	- Added more detail to the content of the message. 
+	- Specified send as html. 
+
 ## [1.1.8] - 2026-03-31 - Cap Web Solutions
 
 ### Added

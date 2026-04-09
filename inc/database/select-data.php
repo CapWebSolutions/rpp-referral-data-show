@@ -464,17 +464,35 @@ class ShowReferralData extends WP_List_Table {
 			$referral['ref_name']
 		);
 		$message = sprintf(
-			/* translators: 1: referral name, 2: referral email, 3: referral date, 4: referral message */
-			__(
-				nl2br("A self-referral was identified.\n\nReferral Name: %1\$s\nReferral Email: %2\$s\nSent Date: %3\$s\nReferral Message: %4\$s\n\n%5\$s\n"),
-				'rpp-referral-data-show'
-			),
-			isset( $referral['ref_name'] ) ? sanitize_text_field( $referral['ref_name'] ) : '',
-			isset( $referral['ref_email'] ) ? sanitize_email( $referral['ref_email'] ) : '',
-			isset( $referral['sent_date'] ) ? sanitize_text_field( $referral['sent_date'] ) : '',
-			isset( $referral['ref_message'] ) ? sanitize_textarea_field( $referral['ref_message'] ) : '',
-			'View this referral from your <a href="https://referralpartnersplus.com/members/me/my-referral-history">My Sent Referrals</a> page and update it as needed.'
+			__("Hi!
+<br><br>
+RPP noticed you recently submitted a referral! Great job! However it looks like it didn’t make it to the person you have intended. 
+<br><br>
+Here are some reasons that may have happened: <br>
+- Instead of selecting the RPP Members Name from the top search box, the name was just typed in. <br>
+- Your name was accidentally put in the top box instead of the RPP member you are sending a referral to.<br>
+<br>
+The details of the referral are below for you.
+<br><br>
+Referral Name: %1\$s<br>
+Referral Email: %2\$s<br>
+Sent Date: %3\$s<br>
+Referral Message: <br>
+%4\$s<br>
+", 'rpp-referral-data-show' ),
+isset( $referral['ref_name'] ) ? sanitize_text_field( $referral['ref_name'] ) : '',
+isset( $referral['ref_email'] ) ? sanitize_email( $referral['ref_email'] ) : '',
+isset( $referral['sent_date'] ) ? sanitize_text_field( $referral['sent_date'] ) : '',
+isset( $referral['ref_message'] ) ? sanitize_textarea_field( $referral['ref_message'] ) : '',
+			
 		);
+
+		$message .= sprintf( 
+			__( '<br>
+Good news! This is fixable. 
+Please use the link below to get to the referral so you can edit it and update it.<br>
+<a href="https://referralpartnersplus.com/members/me/my-referral-history">My Sent Referrals.</a><br><br>
+Thank you.', 'rpp-referral-data-show' ) );
 
 		/**
 		 * Filter subject of self-referral notice email.
@@ -503,6 +521,9 @@ class ShowReferralData extends WP_List_Table {
 		 */
 		$headers = apply_filters( 'rpp_self_referral_notice_email_headers', array(), $referral, $referral_id );
 
+		add_filter('wp_mail_conent_type', function( $content_type ) {
+			return 'text/html';
+		});
 		return (bool) wp_mail( $recipient_email, $subject, $message, $headers );
 	}
 
