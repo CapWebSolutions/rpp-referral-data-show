@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog]( https://keepachangelog.com/en/1.1.0/ ),
 and this project adheres to [Semantic Versioning]( https://semver.org/spec/v2.0.0.html ).
 
+## [1.1.10] - 2026-03-31 - Cap Web Solutions
+
+### Added
+
+- Added admin tooling for self-referral review:
+	- Show Self-referrals toggle on the All Referrals admin page.
+	- Self-referrals count badge near the page heading.
+	- Row action and bulk action to send notice email.
+	- Email template filter hooks:
+		- rpp_self_referral_notice_email_subject
+		- rpp_self_referral_notice_email_message
+		- rpp_self_referral_notice_email_headers
+
+### Changed
+
+- Hardened notice email handling with improved recipient resolution and failure logging for mail troubleshooting.
+- Added nonce and capability checks to CSV download and referral notice actions.
+- Updated admin UI copy for clearer action labels and status notices.
+- Removed debug noise and cleaned up legacy commented code.
+
 ## [1.1.9] - 2026-04-09 - Cap Web Solutions
 
 ### Added

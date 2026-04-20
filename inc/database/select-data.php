@@ -80,8 +80,8 @@ class ShowReferralData extends WP_List_Table {
 			'ref_email'        => 'Referral Email',
 			'ref_phoneno'      => 'Referral Phone Number',
 			'ref_message'      => 'Referral Message',
-			'sender_id'        => 'Sender ID',
-			'recipient_id'     => 'Recipient ID',
+			'sender_id'        => 'Sender',
+			'recipient_id'     => 'Recipient',
 			'sent_date'        => 'Sent Date',
 			'received_date'    => 'Received Date',
 			'referral_type'    => 'Referral Type',
@@ -480,7 +480,7 @@ class ShowReferralData extends WP_List_Table {
 		}
 
 		$subject = sprintf(
-			/* translators: %d: referral ID */
+			/* translators: %s: referral name */
 			__( 'Self-referral notice for %1$s referral.', 'rpp-referral-data-show' ),
 			$referral['ref_name']
 		);
@@ -508,12 +508,14 @@ isset( $referral['ref_message'] ) ? sanitize_textarea_field( $referral['ref_mess
 			
 		);
 
-		$message .= sprintf( 
+		$message .= sprintf(
 			__( '<br>
 Good news! This is fixable. 
 Please use the link below to get to the referral so you can edit it and update it.<br>
-<a href="https://referralpartnersplus.com/members/me/my-referral-history">My Sent Referrals.</a><br><br>
-Thank you.', 'rpp-referral-data-show' ) );
+<a href="%1$s">My Sent Referrals.</a><br><br>
+Thank you.', 'rpp-referral-data-show' ),
+			esc_url( home_url( '/members/me/my-referral-history/' ) )
+		);
 
 		/**
 		 * Filter subject of self-referral notice email.
@@ -614,9 +616,6 @@ Thank you.', 'rpp-referral-data-show' ) );
 		ob_start();
 
 		$output = fopen( 'php://output', 'w' );
-
-		// Debug statement to check data before generating CSV
-		error_log( 'Data for CSV: ' . print_r( $this->items, true ) );
 
 		// Output CSV column headers excluding unwanted columns
 		$columns = array_diff_key( $this->get_columns(), array_flip( array( 'ref_id', 'is_seen', 'cb' ) ) );

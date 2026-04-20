@@ -3,7 +3,7 @@
 /**
  * Plugin Name:       Referral Data Show
  * Description:       A plugin for managing referral data.
- * Version:           1.1.9
+ * Version:           1.1.10
  * Author:            Referral Partners Plus
  * Author URI:         #
  * GitHub Plugin URI: https://github.com/CapWebSolutions/rpp-referral-data-show
@@ -172,30 +172,6 @@ if ( ! class_exists( 'ReferralPluginMain' ) ) {
 			echo '</form>';
 			echo '</div>';
 		}
-
-		/*   public function list_table_page()
-		{
-		$example_list_table = new ShowReferralData();
-		$example_list_table->prepare_items();
-
-		echo '<div class="wrap">
-		<h2>All Referrals</h2>';
-
-		// Add search box
-		echo '<form method="get">';
-		echo '<input type="hidden" name="page" value="' . esc_attr( $_REQUEST['page'] ) . '" />';
-		$example_list_table->search_box( 'Search', 'referral_search' );
-		echo '</form>';
-
-		echo '<form method="post" action="">
-		<input type="hidden" name="action" value="download_csv">
-		<button type="submit" class="button">Download CSV</button>
-		</form>';
-		$example_list_table->display();
-		echo '</div>';
-		} */
-
-
 
 		/**
 		 * Handles the CSV download functionality.
