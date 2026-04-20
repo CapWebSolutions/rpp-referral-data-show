@@ -449,12 +449,33 @@ class ShowReferralData extends WP_List_Table {
 		}
 
 		$recipient_id    = isset( $referral['recipient_id'] ) ? absint( $referral['recipient_id'] ) : 0;
-		$recipient_email = $recipient_id > 0 ? get_the_author_meta( 'user_email', $recipient_id ) : '';
-		if ( empty( $recipient_email ) && ! empty( $referral['ref_email'] ) && is_email( $referral['ref_email'] ) ) {
-			$recipient_email = $referral['ref_email'];
+		$sender_id       = isset( $referral['sender_id'] ) ? absint( $referral['sender_id'] ) : 0;
+		$recipient_email = '';
+
+		// Self-referral notices should go to the member who submitted the referral.
+		if ( $sender_id > 0 ) {
+			$sender_user = get_userdata( $sender_id );
+			if ( $sender_user instanceof WP_User && is_email( $sender_user->user_email ) ) {
+				$recipient_email = $sender_user->user_email;
+			}
+		}
+		// Fallback to recipient account email only if sender email is unavailable.
+		if ( empty( $recipient_email ) && $recipient_id > 0 ) {
+			$recipient_user = get_userdata( $recipient_id );
+			if ( $recipient_user instanceof WP_User && is_email( $recipient_user->user_email ) ) {
+				$recipient_email = $recipient_user->user_email;
+			}
 		}
 
 		if ( empty( $recipient_email ) || ! is_email( $recipient_email ) ) {
+			error_log(
+				sprintf(
+					'RPP send_notice_email skipped for referral #%d. Missing valid user email (sender_id=%d, recipient_id=%d).',
+					$referral_id,
+					$sender_id,
+					$recipient_id
+				)
+			);
 			return false;
 		}
 
@@ -519,12 +540,40 @@ Thank you.', 'rpp-referral-data-show' ) );
 		 * @param array        $referral Referral row data.
 		 * @param int          $referral_id Referral ID.
 		 */
-		$headers = apply_filters( 'rpp_self_referral_notice_email_headers', array(), $referral, $referral_id );
+		$default_headers = array( 'Content-Type: text/html; charset=UTF-8' );
+		$headers         = apply_filters( 'rpp_self_referral_notice_email_headers', $default_headers, $referral, $referral_id );
 
-		add_filter('wp_mail_conent_type', function( $content_type ) {
-			return 'text/html';
-		});
-		return (bool) wp_mail( $recipient_email, $subject, $message, $headers );
+		$mail_error = null;
+		$mail_error_hook = static function ( $wp_error ) use ( &$mail_error ) {
+			$mail_error = $wp_error;
+		};
+
+		add_action( 'wp_mail_failed', $mail_error_hook, 10, 1 );
+		$sent = (bool) wp_mail( $recipient_email, $subject, $message, $headers );
+		remove_action( 'wp_mail_failed', $mail_error_hook, 10 );
+
+		if ( ! $sent ) {
+			if ( is_wp_error( $mail_error ) ) {
+				error_log(
+					sprintf(
+						'RPP send_notice_email failed for referral #%d to %s. Error: %s',
+						$referral_id,
+						$recipient_email,
+						$mail_error->get_error_message()
+					)
+				);
+			} else {
+				error_log(
+					sprintf(
+						'RPP send_notice_email failed for referral #%d to %s. No wp_mail_failed error provided.',
+						$referral_id,
+						$recipient_email
+					)
+				);
+			}
+		}
+
+		return $sent;
 	}
 
 	/**
