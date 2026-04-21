@@ -130,8 +130,9 @@ if ( ! class_exists( 'ReferralPluginMain' ) ) {
 			$count_label = sprintf( esc_html__( 'Self-referrals: %d', 'rpp-referral-data-show' ), absint( $self_referrals_count ) );
 			echo '<div class="wrap">
 	  <h2 style="display:flex; align-items:center; gap:10px;">' . esc_html( $is_self_referrals_view ? 'Self-referrals' : 'All Referrals' ) . '
-		<span class="awaiting-mod" style="position:static; margin:0; min-width:auto;">' . esc_html( $count_label ) . '</span>
-	  </h2>';
+	  </h2>
+  	  <h3><span class="awaiting-mod" style="position:static; margin:0; min-width:auto;">' . esc_html( $count_label ) . '</span>
+	  </h3>';
 
 			if ( isset( $_GET['notice'] ) && isset( $_GET['count'] ) ) {
 				$notice_type = sanitize_text_field( wp_unslash( $_GET['notice'] ) );
