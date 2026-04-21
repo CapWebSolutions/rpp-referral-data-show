@@ -306,22 +306,24 @@ class ShowReferralData extends WP_List_Table {
 	 */
 	public function column_ref_name( $item ) {
 		$ref_id = isset( $item['ref_id'] ) ? absint( $item['ref_id'] ) : 0;
+		$actions = array();
 
-		$url = wp_nonce_url(
-			add_query_arg(
-				array(
-					'page'     => 'referral_data_page',
-					'action'   => 'send_notice_email',
-					'referral' => $ref_id,
+		if ( $this->is_self_referrals_view() ) {
+			$url = wp_nonce_url(
+				add_query_arg(
+					array(
+						'page'           => 'referral_data_page',
+						'self_referrals' => '1',
+						'action'         => 'send_notice_email',
+						'referral'       => $ref_id,
+					),
+					admin_url( 'admin.php' )
 				),
-				admin_url( 'admin.php' )
-			),
-			'rpp_send_notice_email_' . $ref_id
-		);
+				'rpp_send_notice_email_' . $ref_id
+			);
 
-		$actions = array(
-			'send_notice_email' => '<a href="' . esc_url( $url ) . '">' . esc_html__( 'Send notice email', 'rpp-referral-data-show' ) . '</a>',
-		);
+			$actions['send_notice_email'] = '<a href="' . esc_url( $url ) . '">' . esc_html__( 'Send notice email', 'rpp-referral-data-show' ) . '</a>';
+		}
 
 		return sprintf( '%1$s %2$s', esc_html( $item['ref_name'] ), $this->row_actions( $actions ) );
 	}
@@ -346,10 +348,15 @@ class ShowReferralData extends WP_List_Table {
 	 * @return array List of available bulk actions
 	 */
 	protected function get_bulk_actions() {
-		return array(
-			'delete'            => __( 'Delete', 'rpp-referral-data-show' ),
-			'send_notice_email' => __( 'Send notice email', 'rpp-referral-data-show' ),
+		$actions = array(
+			'delete' => __( 'Delete', 'rpp-referral-data-show' ),
 		);
+
+		if ( $this->is_self_referrals_view() ) {
+			$actions['send_notice_email'] = __( 'Send notice email', 'rpp-referral-data-show' );
+		}
+
+		return $actions;
 	}
 
 	/**
@@ -369,6 +376,10 @@ class ShowReferralData extends WP_List_Table {
 		}
 
 		if ( 'send_notice_email' === $current_action ) {
+			if ( ! $this->is_self_referrals_view() ) {
+				return;
+			}
+
 			$referral_ids = isset( $_REQUEST['referral'] ) ? (array) wp_unslash( $_REQUEST['referral'] ) : array();
 			$referral_ids = array_map( 'absint', $referral_ids );
 			$referral_ids = array_filter( $referral_ids );
