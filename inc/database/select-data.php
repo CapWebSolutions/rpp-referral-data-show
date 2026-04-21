@@ -487,7 +487,7 @@ class ShowReferralData extends WP_List_Table {
 		$message = sprintf(
 			__("Hi!
 <br><br>
-RPP noticed you recently submitted a referral! Great job! However it looks like it didn’t make it to the person you have intended. 
+RPP noticed you recently submitted a referral! Great job! However it looks like it didn’t make it to the person you have intended.
 <br><br>
 Here are some reasons that may have happened: <br>
 - Instead of selecting the RPP Members Name from the top search box, the name was just typed in. <br>
@@ -505,12 +505,12 @@ isset( $referral['ref_name'] ) ? sanitize_text_field( $referral['ref_name'] ) : 
 isset( $referral['ref_email'] ) ? sanitize_email( $referral['ref_email'] ) : '',
 isset( $referral['sent_date'] ) ? sanitize_text_field( $referral['sent_date'] ) : '',
 isset( $referral['ref_message'] ) ? sanitize_textarea_field( $referral['ref_message'] ) : '',
-			
+
 		);
 
 		$message .= sprintf(
 			__( '<br>
-Good news! This is fixable. 
+Good news! This is fixable.
 Please use the link below to get to the referral so you can edit it and update it.<br>
 <a href="%1$s">My Sent Referrals.</a><br><br>
 Thank you.', 'rpp-referral-data-show' ),
