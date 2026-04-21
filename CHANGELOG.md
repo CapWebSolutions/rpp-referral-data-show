@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.11] - 2026-04-20 - Cap Web Solutions
+
+### Changed
+
+- Updated default referral list ordering in admin to reverse chronological order so the most recent referrals appear first.
+
 ## [1.1.10] - 2026-04-20 - Cap Web Solutions
 
 ### Added

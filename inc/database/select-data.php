@@ -585,8 +585,8 @@ Thank you.', 'rpp-referral-data-show' ),
 	 */
 	private function sort_data( $a, $b ) {
 		// Set defaults
-		$orderby = 'ref_id';
-		$order   = 'asc';
+		$orderby = 'sent_date';
+		$order   = 'desc';
 
 		// If orderby is set, use this as the sort column
 		if ( ! empty( $_GET['orderby'] ) ) {
