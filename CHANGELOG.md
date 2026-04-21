@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.12] - 2026-04-20 - Cap Web Solutions
+
+### Changed
+
+- Remove quick action menu from default referrals page.
+- Adjust styling of self referral count on referrals page. 
+
 ## [1.1.11] - 2026-04-20 - Cap Web Solutions
 
 ### Changed
